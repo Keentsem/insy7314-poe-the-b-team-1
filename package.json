@@ -1,0 +1,41 @@
+{
+  "name": "insy7314-thebteam",
+  "version": "1.0.0",
+  "description": "Secure full-stack authentication system with React and Express",
+  "workspaces": [
+    "client",
+    "server"
+  ],
+  "scripts": {
+    "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\"",
+    "dev:server": "npm run dev --workspace=server",
+    "dev:client": "npm run dev --workspace=client",
+    "build": "npm run build --workspace=client",
+    "start": "npm start --workspace=server",
+    "lint": "concurrently \"npm run lint --workspace=client\" \"npm run lint --workspace=server\"",
+    "format": "prettier --write \"**/*.{js,jsx,ts,tsx,json,md}\"",
+    "format:check": "prettier --check \"**/*.{js,jsx,ts,tsx,json,md}\"",
+    "test": "concurrently \"npm run test --workspace=client\" \"npm run test --workspace=server\"",
+    "test:security": "npm run test --workspace=server -- --testPathPattern=security",
+    "audit:all": "npm audit && npm audit --workspace=client && npm audit --workspace=server",
+    "install:all": "npm install && npm install --workspace=client && npm install --workspace=server"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "eslint": "^8.57.0",
+    "prettier": "^3.2.5"
+  },
+  "keywords": [
+    "authentication",
+    "security",
+    "react",
+    "express",
+    "https"
+  ],
+  "author": "INSY7314 The B Team",
+  "license": "MIT",
+  "dependencies": {
+    "@radix-ui/react-slot": "^1.2.3",
+    "three": "^0.180.0"
+  }
+}
