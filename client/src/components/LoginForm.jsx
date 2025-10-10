@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { API_ENDPOINTS, getSecureFetchOptions } from '../config/api';
 
 const EMAIL_REGEX = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
 
@@ -70,13 +71,11 @@ const LoginForm = ({ onSwitchToRegister, onLoginSuccess }) => {
     setIsSubmitting(true);
 
     try {
-      const response = await fetch('https://localhost:3003/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      });
+      // SECURITY: Use secure fetch options with credentials for httpOnly cookies
+      const response = await fetch(
+        API_ENDPOINTS.AUTH_LOGIN,
+        getSecureFetchOptions('POST', formData)
+      );
 
       const data = await response.json();
 
@@ -85,11 +84,11 @@ const LoginForm = ({ onSwitchToRegister, onLoginSuccess }) => {
         setFormData({ email: '', password: '' });
         if (onLoginSuccess) {
           setTimeout(() => {
+            // SECURITY: Don't pass token - it's stored in httpOnly cookie
             onLoginSuccess({
               email: formData.email,
               id: data.user?.userId || data.user?.id || 'user123',
               userId: data.user?.userId || data.user?.id || 'user123',
-              token: data.token
             });
           }, 1000);
         }

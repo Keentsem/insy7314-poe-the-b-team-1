@@ -42,6 +42,7 @@ const paymentRoutes = require('./routes/payments');
 const { rateLimitMessage } = require('./utils/validation');
 const { securityMonitoring } = require('./middleware/securityMonitoring');
 const { sanitizeHeaders, sanitizeRequestBody } = require('./middleware/inputSanitization');
+const { getCsrfToken } = require('./middleware/csrfProtection');
 
 const app = express();
 const HTTPS_PORT = process.env.HTTPS_PORT || 3003;
@@ -178,7 +179,7 @@ const corsOptions = {
   },
   credentials: true, // Allow cookies over HTTPS
   methods: ['GET', 'POST'], // Restrict HTTP methods
-  allowedHeaders: ['Content-Type', 'Authorization'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'X-CSRF-Token'],
   maxAge: 86400 // Cache preflight for 24 hours
 };
 
@@ -218,6 +219,9 @@ app.use((req, res, next) => {
   res.setHeader('X-Request-ID', req.get('X-Request-ID') || 'unknown');
   next();
 });
+
+// CSRF Token endpoint - must be before routes that require CSRF protection
+app.get('/api/csrf-token', getCsrfToken);
 
 // Routes
 app.use('/api/auth', authLimiter, authRoutes);

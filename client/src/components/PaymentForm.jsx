@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import GlassSurface from './GlassSurface';
 import ElectricBorder from './ElectricBorder';
+import { API_ENDPOINTS, getSecureFetchOptions, fetchCSRFToken } from '../config/api';
 
 const PaymentForm = ({ userId, onPaymentComplete }) => {
+  const [csrfToken, setCsrfToken] = useState(null);
   const [formData, setFormData] = useState({
     amount: '',
     currency: 'USD',
@@ -15,6 +17,20 @@ const PaymentForm = ({ userId, onPaymentComplete }) => {
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [message, setMessage] = useState('');
+
+  // SECURITY: Fetch CSRF token on component mount
+  useEffect(() => {
+    const loadCSRFToken = async () => {
+      try {
+        const token = await fetchCSRFToken();
+        setCsrfToken(token);
+      } catch (error) {
+        console.error('Failed to fetch CSRF token:', error);
+        setMessage('Security initialization failed. Please refresh the page.');
+      }
+    };
+    loadCSRFToken();
+  }, []);
 
   // Enhanced RegEx patterns for input validation
   const patterns = {
@@ -111,22 +127,24 @@ const PaymentForm = ({ userId, onPaymentComplete }) => {
       return;
     }
 
+    // SECURITY: Ensure CSRF token is available
+    if (!csrfToken) {
+      setMessage('Security token not available. Please refresh the page.');
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
-      const token = localStorage.getItem('authToken');
-      const response = await fetch('https://localhost:3003/api/payments', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
+      // SECURITY: Use secure fetch with httpOnly cookies and CSRF token
+      const response = await fetch(
+        API_ENDPOINTS.PAYMENTS,
+        getSecureFetchOptions('POST', {
           ...formData,
           userId,
           amount: parseFloat(formData.amount)
-        })
-      });
+        }, csrfToken)
+      );
 
       const data = await response.json();
 
@@ -144,6 +162,14 @@ const PaymentForm = ({ userId, onPaymentComplete }) => {
           reference: ''
         });
         setErrors({});
+
+        // SECURITY: Fetch new CSRF token after successful submission
+        try {
+          const newToken = await fetchCSRFToken();
+          setCsrfToken(newToken);
+        } catch (error) {
+          console.error('Failed to refresh CSRF token:', error);
+        }
       } else {
         setMessage(data.message || 'Payment failed. Please try again.');
       }

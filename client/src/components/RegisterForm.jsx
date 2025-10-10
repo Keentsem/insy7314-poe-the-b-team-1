@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { API_ENDPOINTS, getSecureFetchOptions } from '../config/api';
 
 const EMAIL_REGEX = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
 
@@ -82,13 +83,11 @@ const RegisterForm = ({ onSwitchToLogin }) => {
     try {
       const { confirmPassword, ...submitData } = formData;
 
-      const response = await fetch('https://localhost:3003/api/auth/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(submitData),
-      });
+      // SECURITY: Use secure fetch options with credentials for httpOnly cookies
+      const response = await fetch(
+        API_ENDPOINTS.AUTH_REGISTER,
+        getSecureFetchOptions('POST', submitData)
+      );
 
       const data = await response.json();
 

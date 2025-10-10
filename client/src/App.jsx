@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import LoginForm from './components/LoginForm';
 import RegisterForm from './components/RegisterForm';
 import PaymentDashboard from './components/PaymentDashboard';
+import { API_ENDPOINTS, getSecureFetchOptions } from './config/api';
 
 function App() {
   const [isLoginMode, setIsLoginMode] = useState(true);
@@ -14,17 +15,21 @@ function App() {
   const handleLoginSuccess = (userData) => {
     setIsLoggedIn(true);
     setUser(userData);
-    // Store auth token for API calls
-    if (userData.token) {
-      localStorage.setItem('authToken', userData.token);
-    }
+    // SECURITY: Token is now stored in httpOnly cookie by server
+    // No need to store in localStorage (prevents XSS attacks)
   };
 
-  const handleLogout = () => {
-    setIsLoggedIn(false);
-    setUser(null);
-    setIsLoginMode(true);
-    localStorage.removeItem('authToken');
+  const handleLogout = async () => {
+    try {
+      // SECURITY: Call logout endpoint to clear httpOnly cookies
+      await fetch(API_ENDPOINTS.AUTH_LOGOUT, getSecureFetchOptions('POST'));
+    } catch (error) {
+      console.error('Logout error:', error);
+    } finally {
+      setIsLoggedIn(false);
+      setUser(null);
+      setIsLoginMode(true);
+    }
   };
 
   if (isLoggedIn && user) {
