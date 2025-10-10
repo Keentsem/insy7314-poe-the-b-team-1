@@ -704,11 +704,11 @@ SOFTWARE.
 
 **The B Team**
 - Course: INSY7314 - Web Application Security
-- Institution: University of North Texas
-- Semester: Fall 2025
+- Institution: Varsity College Sandton 
+- Semester: Semester 2 
 
 ### Special Thanks
-- **Instructor:** [Course Instructor Name]
+- **Instructor:** Itumeleng Molokomme
 - **Security Libraries:** Helmet.js, Argon2, Express Security Middleware
 - **UI/UX Inspiration:** Glass morphism design trends, Terminal aesthetics
 
