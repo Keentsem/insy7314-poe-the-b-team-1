@@ -9,7 +9,7 @@ A comprehensive full-stack authentication and payment system demonstrating **ent
 
 **Author:** INSY7314 The B Team
 **Course:** INSY7314 - Web Application Security
-**Institution:** University of North Texas
+
 
 ---
 
