@@ -240,7 +240,7 @@ describe('HTTPS Configuration - EXCEEDS STANDARD Implementation', () => {
 
       // Mock missing certificate file
       fs.existsSync = jest.fn((path) => {
-        if (path.includes('key.pem')) return false;
+        if (path.includes('key.pem')) {return false;}
         return originalExistsSync(path);
       });
 

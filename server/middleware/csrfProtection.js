@@ -40,7 +40,7 @@ const CSRF_CONFIG = {
   cookieOptions: {
     httpOnly: true,        // PREVENTS XSS: Cannot be accessed via JavaScript
     secure: true,          // ENFORCES HTTPS: Only sent over secure connections
-    sameSite: 'strict',    // PREVENTS CSRF: No cross-site cookie sending
+    sameSite: 'none',      // ALLOWS CROSS-PORT: Required for frontend on different port
     maxAge: 3600000,       // 1 hour expiry
     signed: false          // We handle validation manually
   }
@@ -111,11 +111,30 @@ function validateOrigin(req, res, next) {
   const referer = req.get('Referer');
   const host = req.get('Host');
 
-  // Expected origins for our application
+  // Expected origins for our application (HTTP for dev frontend, HTTPS for backend)
   const allowedOrigins = [
     `https://${host}`,
+    `http://${host}`,
+    // HTTPS frontend origins
     'https://localhost:5173',
-    'https://127.0.0.1:5173'
+    'https://localhost:5174',
+    'https://localhost:5175',
+    'https://localhost:5176',
+    'https://localhost:5177',
+    'https://localhost:5178',
+    'https://127.0.0.1:5173',
+    'https://127.0.0.1:5174',
+    'https://127.0.0.1:5175',
+    // HTTP frontend origins (development)
+    'http://localhost:5173',
+    'http://localhost:5174',
+    'http://localhost:5175',
+    'http://localhost:5176',
+    'http://localhost:5177',
+    'http://localhost:5178',
+    'http://127.0.0.1:5173',
+    'http://127.0.0.1:5174',
+    'http://127.0.0.1:5175'
   ];
 
   // SECURITY: Validate origin header

@@ -7,7 +7,8 @@
     "start": "node index.js",
     "dev": "nodemon index.js",
     "lint": "eslint .",
-    "test": "jest --testPathPattern=security"
+    "test": "jest --testPathPattern=security",
+    "test:coverage": "jest --coverage --coverageDirectory=coverage"
   },
   "dependencies": {
     "argon2": "^0.44.0",
@@ -27,6 +28,7 @@
     "https": "^1.0.0",
     "jsdom": "^24.0.0",
     "jsonwebtoken": "^9.0.2",
+    "mongodb": "^6.3.0",
     "mongoose": "^8.18.1",
     "mongoose-encryption": "^2.1.2"
   },

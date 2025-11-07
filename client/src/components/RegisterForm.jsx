@@ -7,9 +7,11 @@ const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@
 
 const RegisterForm = ({ onSwitchToLogin }) => {
   const [formData, setFormData] = useState({
+    name: '',
     email: '',
     password: '',
-    confirmPassword: ''
+    confirmPassword: '',
+    accountNumber: ''
   });
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -17,6 +19,11 @@ const RegisterForm = ({ onSwitchToLogin }) => {
 
   const validateField = (name, value) => {
     switch (name) {
+      case 'name':
+        if (!value.trim()) return 'Name is required';
+        if (value.trim().length < 2) return 'Name must be at least 2 characters';
+        if (value.trim().length > 100) return 'Name must be less than 100 characters';
+        return '';
       case 'email':
         if (!value.trim()) return 'Email is required';
         if (!EMAIL_REGEX.test(value)) return 'Please enter a valid email address';
@@ -30,6 +37,11 @@ const RegisterForm = ({ onSwitchToLogin }) => {
       case 'confirmPassword':
         if (!value) return 'Please confirm your password';
         if (value !== formData.password) return 'Passwords do not match';
+        return '';
+      case 'accountNumber':
+        if (!value.trim()) return 'Account number is required';
+        if (value.trim().length < 8) return 'Account number must be at least 8 characters';
+        if (value.trim().length > 20) return 'Account number must be less than 20 characters';
         return '';
       default:
         return '';
@@ -93,7 +105,7 @@ const RegisterForm = ({ onSwitchToLogin }) => {
 
       if (data.success) {
         setMessage('Registration successful! You can now log in.');
-        setFormData({ email: '', password: '', confirmPassword: '' });
+        setFormData({ name: '', email: '', password: '', confirmPassword: '', accountNumber: '' });
         setTimeout(() => {
           onSwitchToLogin();
         }, 2000);
@@ -120,6 +132,22 @@ const RegisterForm = ({ onSwitchToLogin }) => {
 
       <form onSubmit={handleSubmit}>
         <div className="form-group">
+          <label htmlFor="register-name">Full Name</label>
+          <input
+            type="text"
+            id="register-name"
+            name="name"
+            value={formData.name}
+            onChange={handleChange}
+            onBlur={handleBlur}
+            className={errors.name ? 'error' : ''}
+            placeholder="John Doe"
+            required
+          />
+          {errors.name && <div className="error-message">{errors.name}</div>}
+        </div>
+
+        <div className="form-group">
           <label htmlFor="register-email">Email Address</label>
           <input
             type="email"
@@ -129,9 +157,26 @@ const RegisterForm = ({ onSwitchToLogin }) => {
             onChange={handleChange}
             onBlur={handleBlur}
             className={errors.email ? 'error' : ''}
+            placeholder="john@example.com"
             required
           />
           {errors.email && <div className="error-message">{errors.email}</div>}
+        </div>
+
+        <div className="form-group">
+          <label htmlFor="register-accountNumber">Account Number</label>
+          <input
+            type="text"
+            id="register-accountNumber"
+            name="accountNumber"
+            value={formData.accountNumber}
+            onChange={handleChange}
+            onBlur={handleBlur}
+            className={errors.accountNumber ? 'error' : ''}
+            placeholder="12345678"
+            required
+          />
+          {errors.accountNumber && <div className="error-message">{errors.accountNumber}</div>}
         </div>
 
         <div className="form-group">
@@ -144,6 +189,7 @@ const RegisterForm = ({ onSwitchToLogin }) => {
             onChange={handleChange}
             onBlur={handleBlur}
             className={errors.password ? 'error' : ''}
+            placeholder="Min 8 chars, uppercase, lowercase, number, special"
             required
           />
           {errors.password && <div className="error-message">{errors.password}</div>}

@@ -10,15 +10,35 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://localhost:3003';
  * API Endpoints
  */
 export const API_ENDPOINTS = {
-  // Auth endpoints
+  // Customer Auth endpoints
   AUTH_LOGIN: `${API_BASE_URL}/api/auth/login`,
   AUTH_REGISTER: `${API_BASE_URL}/api/auth/register`,
   AUTH_LOGOUT: `${API_BASE_URL}/api/auth/logout`,
   AUTH_PROFILE: `${API_BASE_URL}/api/auth/profile`,
   AUTH_REFRESH: `${API_BASE_URL}/api/auth/refresh`,
 
-  // Payment endpoints
+  // Employee Auth endpoints - TASK 3
+  AUTH_EMPLOYEE_LOGIN: `${API_BASE_URL}/api/auth/employee/login`,
+  AUTH_EMPLOYEE_PROFILE: `${API_BASE_URL}/api/auth/employee/profile`,
+
+  // Customer Payment endpoints
   PAYMENTS: `${API_BASE_URL}/api/payments`,
+
+  // Employee Payment endpoints - TASK 3
+  PAYMENTS_EMPLOYEE_PENDING: `${API_BASE_URL}/api/payments/employee/pending`,
+  PAYMENTS_EMPLOYEE_ALL: `${API_BASE_URL}/api/payments/employee/all`,
+  PAYMENTS_EMPLOYEE_VERIFY: (transactionId) => `${API_BASE_URL}/api/payments/employee/verify/${transactionId}`,
+  PAYMENTS_EMPLOYEE_SUBMIT_SWIFT: `${API_BASE_URL}/api/payments/employee/submit-swift`,
+
+  // Invoice endpoints - TASK 3
+  INVOICES_CUSTOMER: `${API_BASE_URL}/api/payments/invoices`,
+  INVOICES_EMPLOYEE: `${API_BASE_URL}/api/payments/employee/invoices`,
+  INVOICE_DETAILS: (invoiceNumber) => `${API_BASE_URL}/api/payments/invoices/${invoiceNumber}`,
+
+  // Employee Customer endpoints
+  CUSTOMERS_EMPLOYEE_ALL: `${API_BASE_URL}/api/customers/employee/all`,
+  CUSTOMERS_EMPLOYEE_DETAILS: (customerId) => `${API_BASE_URL}/api/customers/employee/${customerId}`,
+  CUSTOMERS_EMPLOYEE_STATS: `${API_BASE_URL}/api/customers/employee/stats`,
 
   // CSRF token endpoint
   CSRF_TOKEN: `${API_BASE_URL}/api/csrf-token`,

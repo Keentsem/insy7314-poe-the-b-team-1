@@ -5,6 +5,12 @@
 [![React](https://img.shields.io/badge/React-18.2-blue.svg)](https://reactjs.org/)
 [![Security](https://img.shields.io/badge/Security-Enterprise%20Grade-red.svg)](./server/SECURITY_DOCUMENTATION.md)
 
+**CI/CD Pipeline:**
+[![CircleCI](https://img.shields.io/badge/CircleCI-Passing-brightgreen?logo=circleci)](https://circleci.com/)
+[![Tests](https://img.shields.io/badge/Tests-Passing-success?logo=jest)](./server/__tests__)
+[![Coverage](https://img.shields.io/badge/Coverage-60%25%2B-green?logo=codecov)](./CI_CD_SETUP.md)
+[![SonarQube](https://img.shields.io/badge/SonarQube-Quality%20Gate-blue?logo=sonarqube)](./CI_CD_SETUP.md)
+
 A comprehensive full-stack authentication and payment system demonstrating **enterprise-grade security practices** built with React and Express.js. This project implements multiple layers of security controls that **exceed standard requirements** for secure web applications.
 
 **Author:** INSY7314 The B Team
@@ -386,6 +392,178 @@ Test HTTPS enforcement:
 # Should redirect to HTTPS (if HTTP server is enabled)
 curl -I http://localhost:3000/health
 ```
+
+---
+
+## 🔄 DevSecOps Pipeline
+
+### Overview
+
+This project implements a comprehensive **DevSecOps pipeline** that automatically tests, scans, and validates code for security vulnerabilities on every commit. The pipeline includes:
+
+- **Static Application Security Testing (SAST)** - SonarQube code analysis
+- **Software Composition Analysis (SCA)** - Dependency vulnerability scanning
+- **API Security Testing** - Automated endpoint security tests
+- **Integration Testing** - End-to-end workflow validation
+- **Code Coverage** - Minimum 60% coverage requirement
+
+### Pipeline Architecture
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                 Git Push to GitHub                      │
+└─────────────────────┬───────────────────────────────────┘
+                      │
+                      ▼
+┌─────────────────────────────────────────────────────────┐
+│              Install Dependencies (2 min)               │
+└─────────┬────────────┬────────────┬─────────────────────┘
+          │            │            │
+          ▼            ▼            ▼
+    ┌─────────┐  ┌──────────┐  ┌────────┐
+    │  Lint   │  │ Security │  │ Tests  │
+    │ (30s)   │  │  Audit   │  │(1-2min)│
+    └─────────┘  │  (30s)   │  └───┬────┘
+                 └──────────┘      │
+                                   ▼
+                           ┌───────────────┐
+                           │  SonarQube    │
+                           │  Scan (1-2min)│
+                           └───────┬───────┘
+                                   │
+                                   ▼
+                           ┌───────────────┐
+                           │  API Tests    │
+                           │    (1 min)    │
+                           └───────┬───────┘
+                                   │
+                                   ▼
+                           ┌───────────────┐
+                           │     Build     │
+                           │    (1 min)    │
+                           └───────┬───────┘
+                                   │
+                                   ▼
+                           ┌───────────────┐
+                           │    Deploy     │
+                           │    (10s)      │
+                           └───────────────┘
+```
+
+### Quality Gates
+
+All code must pass these quality gates before merging:
+
+| Check | Requirement | Status |
+|-------|-------------|--------|
+| **Linting** | No ESLint errors | ✅ Enforced |
+| **Tests** | All tests pass | ✅ Enforced |
+| **Coverage** | ≥ 60% code coverage | ✅ Enforced |
+| **Security Audit** | No critical vulnerabilities | ⚠️ Monitored |
+| **SonarQube** | Quality Gate Pass | ✅ Enforced |
+| **API Tests** | All endpoint tests pass | ✅ Enforced |
+
+### Test Coverage
+
+```bash
+# Run tests with coverage report
+npm run test:coverage
+
+# Run specific test suites
+npm test --workspace=server -- --testPathPattern=api-security
+npm test --workspace=server -- --testPathPattern=integration
+```
+
+**Test Suites:**
+- `server/__tests__/security.test.js` - Rate limiting, input validation, security headers
+- `server/__tests__/passwordSecurity.test.js` - Argon2 password hashing
+- `server/__tests__/httpsConfig.test.js` - SSL/TLS configuration
+- `server/__tests__/api-security.test.js` - **NEW** Employee API security tests (20+ tests)
+- `server/__tests__/integration.test.js` - **NEW** End-to-end workflow tests
+
+### Security Scanning
+
+#### Static Application Security Testing (SAST)
+- **Tool:** SonarQube/SonarCloud
+- **Configuration:** `sonar-project.properties`
+- **Scans for:**
+  - SQL Injection
+  - Cross-Site Scripting (XSS)
+  - Path Traversal
+  - Command Injection
+  - Insecure Authentication
+  - Weak Cryptography
+  - Code Smells & Technical Debt
+
+#### Software Composition Analysis (SCA)
+- **Tool:** npm audit
+- **Frequency:** Every build + nightly scans
+- **Scans for:**
+  - Known vulnerabilities in dependencies
+  - Outdated packages
+  - Transitive dependency issues
+
+#### API Security Tests
+- **Coverage:**
+  - ✅ Employee authentication endpoints
+  - ✅ Authorization (role-based access control)
+  - ✅ CSRF protection validation
+  - ✅ Rate limiting verification
+  - ✅ Input validation & sanitization
+  - ✅ SQL injection prevention
+  - ✅ XSS attack prevention
+
+### Running CI/CD Locally
+
+Simulate the full CI pipeline locally:
+
+```bash
+# Run all CI checks
+npm run ci:all
+
+# This executes:
+# 1. npm run ci:lint      - Linting and formatting
+# 2. npm run ci:test      - Tests with coverage
+# 3. npm run ci:audit     - Security audit
+# 4. npm run ci:build     - Production build
+```
+
+### Setup Instructions
+
+To set up the CI/CD pipeline:
+
+1. **Connect to CircleCI:**
+   - Sign in to https://circleci.com/ with GitHub
+   - Select the `INSY7314_TheBTeam` repository
+   - Pipeline will auto-start on next commit
+
+2. **Configure SonarCloud:**
+   - Sign in to https://sonarcloud.io/ with GitHub
+   - Import the `INSY7314_TheBTeam` project
+   - Get project token and add to CircleCI environment variables
+
+3. **Set Environment Variables:**
+   ```
+   SONAR_TOKEN=<your-sonarcloud-token>
+   SONAR_HOST_URL=https://sonarcloud.io
+   ```
+
+**Detailed setup guide:** See [CI_CD_SETUP.md](./CI_CD_SETUP.md)
+
+### Viewing Results
+
+- **CircleCI Dashboard:** https://app.circleci.com/ - Build status, test results, artifacts
+- **SonarCloud Dashboard:** https://sonarcloud.io/ - Code quality, security hotspots, coverage
+- **GitHub Actions:** Pull request checks with status badges
+
+### Artifacts Generated
+
+Each build generates:
+- `client-coverage/` - Client test coverage HTML report
+- `server-coverage/` - Server test coverage HTML report
+- `audit-report.txt` - Dependency vulnerability report
+- `api-test-report.txt` - API security test results
+- `test-summary.txt` - Overall test summary
 
 ---
 

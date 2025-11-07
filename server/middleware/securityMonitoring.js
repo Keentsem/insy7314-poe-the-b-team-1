@@ -168,7 +168,7 @@ function getSeverityLevel(eventType) {
  * Extract real client IP address
  */
 function getClientIP(req) {
-  if (!req) return 'Unknown';
+  if (!req) {return 'Unknown';}
   return req.ip ||
          req.connection?.remoteAddress ||
          req.socket?.remoteAddress ||
@@ -245,7 +245,7 @@ function trackFailedLogin(req, email) {
  * Session anomaly detection
  */
 function detectSessionAnomaly(req) {
-  if (!req.user) return null;
+  if (!req.user) {return null;}
 
   const userId = req.user.userId;
   const ip = getClientIP(req);
@@ -383,7 +383,7 @@ function isIPBlocked(ip) {
   const blockKey = `blocked-${ip}`;
   const blockInfo = ipAttempts.get(blockKey);
 
-  if (!blockInfo) return false;
+  if (!blockInfo) {return false;}
 
   if (Date.now() > blockInfo.blockedUntil) {
     ipAttempts.delete(blockKey);
@@ -435,7 +435,7 @@ function securityMonitoring(req, res, next) {
  * Calculate risk level based on detections
  */
 function calculateRiskLevel(detections) {
-  if (detections.length === 0) return 'low';
+  if (detections.length === 0) {return 'low';}
 
   const severityScores = {
     'low': 1,
@@ -448,9 +448,9 @@ function calculateRiskLevel(detections) {
     return score + (severityScores[detection.severity] || 1);
   }, 0);
 
-  if (totalScore >= 10) return 'critical';
-  if (totalScore >= 5) return 'high';
-  if (totalScore >= 2) return 'medium';
+  if (totalScore >= 10) {return 'critical';}
+  if (totalScore >= 5) {return 'high';}
+  if (totalScore >= 2) {return 'medium';}
   return 'low';
 }
 

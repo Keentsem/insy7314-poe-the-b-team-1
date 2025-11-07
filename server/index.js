@@ -39,10 +39,15 @@ const cookieParser = require('cookie-parser');
 
 const authRoutes = require('./routes/auth');
 const paymentRoutes = require('./routes/payments');
+const customerRoutes = require('./routes/customers');
 const { rateLimitMessage } = require('./utils/validation');
 const { securityMonitoring } = require('./middleware/securityMonitoring');
 const { sanitizeHeaders, sanitizeRequestBody } = require('./middleware/inputSanitization');
 const { getCsrfToken } = require('./middleware/csrfProtection');
+const { connectDB } = require('./config/database');
+
+// Enhanced comprehensive validation and sanitization
+const { globalSanitization } = require('./middleware/comprehensiveValidation');
 
 const app = express();
 const HTTPS_PORT = process.env.HTTPS_PORT || 3003;
@@ -168,7 +173,7 @@ const corsOptions = {
     ];
 
     // Allow same-origin requests (no origin header)
-    if (!origin) return callback(null, true);
+    if (!origin) {return callback(null, true);}
 
     // Check if origin is in whitelist
     if (allowedOrigins.includes(origin)) {
@@ -188,9 +193,10 @@ app.use(cors(corsOptions));
 /**
  * RATE LIMITING WITH ENHANCED SECURITY - EXCEEDS STANDARD
  */
+// Strict rate limiter for authentication endpoints (login, register)
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 5, // Strict limit for auth endpoints
+  max: 5, // Strict limit for auth endpoints to prevent brute force
   message: rateLimitMessage,
   standardHeaders: true,
   legacyHeaders: false,
@@ -201,31 +207,51 @@ const authLimiter = rateLimit({
   }
 });
 
+// More lenient rate limiter for API endpoints (GET requests, data fetching)
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // Allow 100 requests per 15 minutes for API calls
+  message: rateLimitMessage,
+  standardHeaders: true,
+  legacyHeaders: false,
+  skipSuccessfulRequests: true, // Don't count successful requests
+  keyGenerator: (req) => {
+    return `${req.ip}-${req.get('User-Agent') || 'unknown'}`;
+  }
+});
+
 // Cookie parsing for JWT tokens
 app.use(cookieParser());
-
-// Security middleware
-app.use(sanitizeHeaders);
-app.use(sanitizeRequestBody);
-app.use(securityMonitoring);
 
 // Body parsing with size limits (DoS protection)
 app.use(express.json({ limit: '10kb' })); // Reduced from 10mb for security
 app.use(express.urlencoded({ extended: true, limit: '10kb' }));
 
-// Security middleware for all requests (HTTPS requirement will be added conditionally)
+// Security middleware - Order matters!
+app.use(sanitizeHeaders);
+app.use(sanitizeRequestBody);
+app.use(globalSanitization); // Enhanced NoSQL injection & XSS prevention
+app.use(securityMonitoring);
+
+// Additional security headers - EXCEEDS STANDARD
 app.use((req, res, next) => {
   // Add security response headers
   res.setHeader('X-Request-ID', req.get('X-Request-ID') || 'unknown');
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('X-XSS-Protection', '1; mode=block');
+  res.setHeader('Permissions-Policy', 'geolocation=(), microphone=(), camera=()');
+  res.setHeader('X-Permitted-Cross-Domain-Policies', 'none');
   next();
 });
 
 // CSRF Token endpoint - must be before routes that require CSRF protection
 app.get('/api/csrf-token', getCsrfToken);
 
-// Routes
-app.use('/api/auth', authLimiter, authRoutes);
-app.use('/api/payments', authLimiter, paymentRoutes);
+// Routes with appropriate rate limiting
+app.use('/api/auth', authLimiter, authRoutes); // Strict limit for auth
+app.use('/api/payments', apiLimiter, paymentRoutes); // Lenient limit for payments
+app.use('/api/customers', apiLimiter, customerRoutes); // Lenient limit for customers
 
 // Health check endpoint
 app.get('/health', (req, res) => {
@@ -301,8 +327,12 @@ function loadSSLCertificates() {
  *
  * Creates HTTP server for development when SSL certificates are not available
  */
-function startServers() {
+async function startServers() {
   try {
+    // Connect to MongoDB first
+    console.log('🔌 Connecting to MongoDB...');
+    await connectDB();
+
     // Check if SSL certificates exist
     const keyPath = path.join(__dirname, '../config/key.pem');
     const certPath = path.join(__dirname, '../config/cert.pem');

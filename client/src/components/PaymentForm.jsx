@@ -1,10 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import GlassSurface from './GlassSurface';
 import ElectricBorder from './ElectricBorder';
-import { API_ENDPOINTS, getSecureFetchOptions, fetchCSRFToken } from '../config/api';
 
 const PaymentForm = ({ userId, onPaymentComplete }) => {
-  const [csrfToken, setCsrfToken] = useState(null);
   const [formData, setFormData] = useState({
     amount: '',
     currency: 'USD',
@@ -17,20 +15,6 @@ const PaymentForm = ({ userId, onPaymentComplete }) => {
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [message, setMessage] = useState('');
-
-  // SECURITY: Fetch CSRF token on component mount
-  useEffect(() => {
-    const loadCSRFToken = async () => {
-      try {
-        const token = await fetchCSRFToken();
-        setCsrfToken(token);
-      } catch (error) {
-        console.error('Failed to fetch CSRF token:', error);
-        setMessage('Security initialization failed. Please refresh the page.');
-      }
-    };
-    loadCSRFToken();
-  }, []);
 
   // Enhanced RegEx patterns for input validation
   const patterns = {
@@ -127,24 +111,20 @@ const PaymentForm = ({ userId, onPaymentComplete }) => {
       return;
     }
 
-    // SECURITY: Ensure CSRF token is available
-    if (!csrfToken) {
-      setMessage('Security token not available. Please refresh the page.');
-      return;
-    }
-
     setIsSubmitting(true);
 
     try {
-      // SECURITY: Use secure fetch with httpOnly cookies and CSRF token
-      const response = await fetch(
-        API_ENDPOINTS.PAYMENTS,
-        getSecureFetchOptions('POST', {
+      // Import API_ENDPOINTS at the top of the file
+      const { API_ENDPOINTS, getSecureFetchOptions } = await import('../config/api.js');
+
+      const response = await fetch(API_ENDPOINTS.PAYMENTS, {
+        ...getSecureFetchOptions('POST', {
           ...formData,
           userId,
           amount: parseFloat(formData.amount)
-        }, csrfToken)
-      );
+        }),
+        credentials: 'include'
+      });
 
       const data = await response.json();
 
@@ -162,14 +142,6 @@ const PaymentForm = ({ userId, onPaymentComplete }) => {
           reference: ''
         });
         setErrors({});
-
-        // SECURITY: Fetch new CSRF token after successful submission
-        try {
-          const newToken = await fetchCSRFToken();
-          setCsrfToken(newToken);
-        } catch (error) {
-          console.error('Failed to refresh CSRF token:', error);
-        }
       } else {
         setMessage(data.message || 'Payment failed. Please try again.');
       }
@@ -183,9 +155,9 @@ const PaymentForm = ({ userId, onPaymentComplete }) => {
 
   return (
     <ElectricBorder
-      color="#7df9ff"
-      speed={1}
-      chaos={0.5}
+      color="#a7c1a8"
+      speed={0.8}
+      chaos={0.6}
       thickness={2}
       style={{ borderRadius: 16 }}
     >
@@ -206,16 +178,16 @@ const PaymentForm = ({ userId, onPaymentComplete }) => {
         mixBlendMode="normal"
         className="payment-form-container"
       >
-      <div style={{ width: '100%' }}>
-        <h3>International Payment</h3>
+        <div style={{ width: '100%' }}>
+          <h3>International Payment</h3>
 
-        {message && (
-          <div className={message.includes('successfully') ? 'success-message' : 'error-response'}>
-            {message}
-          </div>
-        )}
+          {message && (
+            <div className={message.includes('successfully') ? 'success-message' : 'error-response'}>
+              {message}
+            </div>
+          )}
 
-        <form onSubmit={handleSubmit} className="payment-form">
+          <form onSubmit={handleSubmit} className="payment-form">
         <div className="form-row">
           <div className="form-group">
             <label htmlFor="amount">Amount *</label>
@@ -320,15 +292,15 @@ const PaymentForm = ({ userId, onPaymentComplete }) => {
         >
           {isSubmitting ? 'Processing Payment...' : `Pay ${formData.amount} ${formData.currency}`}
         </button>
+          </form>
 
-        <div className="security-notice">
-          🔒 All payment data is encrypted and processed securely
+          <div className="security-notice">
+            🔒 All payment data is encrypted and processed securely
+          </div>
         </div>
-      </form>
-      </div>
       </GlassSurface>
     </ElectricBorder>
   );
 };
 
-export default PaymentForm;
+export default PaymentForm;1

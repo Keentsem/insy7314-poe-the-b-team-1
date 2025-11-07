@@ -17,8 +17,16 @@
     "format:check": "prettier --check \"**/*.{js,jsx,ts,tsx,json,md}\"",
     "test": "concurrently \"npm run test --workspace=client\" \"npm run test --workspace=server\"",
     "test:security": "npm run test --workspace=server -- --testPathPattern=security",
+    "test:coverage": "concurrently \"npm run test:coverage --workspace=client\" \"npm run test:coverage --workspace=server\"",
     "audit:all": "npm audit && npm audit --workspace=client && npm audit --workspace=server",
-    "install:all": "npm install && npm install --workspace=client && npm install --workspace=server"
+    "install:all": "npm install && npm install --workspace=client && npm install --workspace=server",
+    "sonar": "npx sonar-scanner",
+    "sonar:local": "npx cross-env SONAR_TOKEN=$SONAR_TOKEN npx sonar-scanner",
+    "ci:lint": "npm run lint && npm run format:check",
+    "ci:test": "npm run test:coverage",
+    "ci:audit": "npm run audit:all",
+    "ci:build": "npm run build",
+    "ci:all": "npm run ci:lint && npm run ci:test && npm run ci:audit && npm run ci:build"
   },
   "devDependencies": {
     "concurrently": "^8.2.2",

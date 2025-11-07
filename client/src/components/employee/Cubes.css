@@ -1,0 +1,144 @@
+/**
+ * Cubes Animation Styles - Task 3 Employee Portal
+ * Provides 3D cube grid background with ripple effects
+ */
+
+.cubes-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  z-index: 0;
+  background: linear-gradient(135deg, #0a0a1a 0%, #1a1a2e 100%);
+}
+
+.cubes-grid {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: grid;
+  perspective: 1000px;
+  transform-style: preserve-3d;
+}
+
+.cube-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  perspective: 1000px;
+  transform-style: preserve-3d;
+}
+
+.cube {
+  width: 80%;
+  height: 80%;
+  position: relative;
+  transform-style: preserve-3d;
+  transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.cube:hover {
+  transform: rotateX(180deg) rotateY(180deg) scale(1.1);
+}
+
+.cube-face {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  font-weight: bold;
+  backface-visibility: hidden;
+  opacity: 0.7;
+  transition: opacity 0.3s ease;
+}
+
+.cube:hover .cube-face {
+  opacity: 0.95;
+}
+
+/* Cube faces positioning */
+.cube-face.front {
+  transform: translateZ(calc(var(--cube-size, 50px) / 2));
+}
+
+.cube-face.back {
+  transform: translateZ(calc(var(--cube-size, 50px) / -2)) rotateY(180deg);
+}
+
+.cube-face.right {
+  transform: rotateY(90deg) translateZ(calc(var(--cube-size, 50px) / 2));
+}
+
+.cube-face.left {
+  transform: rotateY(-90deg) translateZ(calc(var(--cube-size, 50px) / 2));
+}
+
+.cube-face.top {
+  transform: rotateX(90deg) translateZ(calc(var(--cube-size, 50px) / 2));
+}
+
+.cube-face.bottom {
+  transform: rotateX(-90deg) translateZ(calc(var(--cube-size, 50px) / 2));
+}
+
+/* Animation keyframes */
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px) rotateX(0deg) rotateY(0deg);
+  }
+  50% {
+    transform: translateY(-10px) rotateX(5deg) rotateY(5deg);
+  }
+}
+
+@keyframes ripple {
+  0% {
+    transform: scale(1) rotateX(0deg) rotateY(0deg);
+    opacity: 0.7;
+  }
+  50% {
+    transform: scale(1.2) rotateX(180deg) rotateY(180deg);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1) rotateX(360deg) rotateY(360deg);
+    opacity: 0.7;
+  }
+}
+
+.cube.animate {
+  animation: float 3s ease-in-out infinite;
+}
+
+.cube.ripple {
+  animation: ripple 1s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .cube {
+    width: 70%;
+    height: 70%;
+  }
+
+  .cube-face {
+    font-size: 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .cube {
+    width: 60%;
+    height: 60%;
+  }
+
+  .cube-face {
+    font-size: 1rem;
+  }
+}

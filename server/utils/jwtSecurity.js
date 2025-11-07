@@ -56,7 +56,7 @@ const TOKEN_CONFIG = {
 const COOKIE_CONFIG = {
   httpOnly: true,        // PREVENTS XSS: Cannot be accessed via JavaScript
   secure: true,          // PREVENTS MITM: Only sent over HTTPS
-  sameSite: 'strict',    // PREVENTS CSRF: No cross-site requests
+  sameSite: 'none',      // Allow cross-port cookies for localhost development
   maxAge: 15 * 60 * 1000, // 15 minutes to match access token
   path: '/',
   domain: undefined      // Same-origin only
@@ -172,6 +172,8 @@ async function verifyToken(token, tokenType = 'access') {
     const secret = tokenType === 'refresh' ? JWT_REFRESH_SECRET : JWT_SECRET;
     const config = tokenType === 'refresh' ? TOKEN_CONFIG.refreshToken : TOKEN_CONFIG.accessToken;
 
+    console.log('🔍 Verifying token type:', tokenType);
+
     // SECURITY: Verify with strict options
     const decoded = jwt.verify(token, secret, {
       algorithms: [config.algorithm], // PREVENTS algorithm confusion attacks
@@ -182,8 +184,11 @@ async function verifyToken(token, tokenType = 'access') {
       ignoreNotBefore: false,         // ENFORCES not-before validation
     });
 
+    console.log('📝 Decoded token:', { userId: decoded.userId, email: decoded.email, role: decoded.role });
+
     // SECURITY: Additional validation checks
     if (!decoded.userId || !decoded.email) {
+      console.log('❌ Missing userId or email in token');
       throw new Error('Invalid token claims');
     }
 
@@ -192,11 +197,13 @@ async function verifyToken(token, tokenType = 'access') {
     const maxAge = tokenType === 'refresh' ? 7 * 24 * 60 * 60 : 15 * 60; // 7 days or 15 minutes
 
     if (tokenAge > maxAge) {
+      console.log('❌ Token too old:', tokenAge, 'seconds');
       throw new Error('Token too old');
     }
 
     return decoded;
   } catch (error) {
+    console.log('❌ Token verification error:', error.name, error.message);
     // SECURITY: Consistent error response prevents information leakage
     if (error.name === 'JsonWebTokenError' ||
         error.name === 'TokenExpiredError' ||
@@ -252,14 +259,14 @@ function clearSecureCookies(res) {
   res.clearCookie('accessToken', {
     httpOnly: true,
     secure: true,
-    sameSite: 'strict',
+    sameSite: 'none',
     path: '/'
   });
 
   res.clearCookie('refreshToken', {
     httpOnly: true,
     secure: true,
-    sameSite: 'strict',
+    sameSite: 'none',
     path: '/api/auth/refresh'
   });
 }
@@ -283,6 +290,14 @@ async function authenticateToken(req, res, next) {
     // SECURITY: Extract token from secure httpOnly cookie OR Authorization header
     let token = req.cookies?.accessToken;
 
+    // DEBUG: Log cookie and header info
+    console.log('🔍 Auth Debug:', {
+      hasCookies: !!req.cookies,
+      cookieKeys: req.cookies ? Object.keys(req.cookies) : [],
+      hasAccessToken: !!token,
+      hasAuthHeader: !!req.headers.authorization
+    });
+
     // If no cookie token, check Authorization header
     if (!token) {
       const authHeader = req.headers.authorization;
@@ -292,6 +307,7 @@ async function authenticateToken(req, res, next) {
     }
 
     if (!token) {
+      console.log('❌ No token found in cookies or headers');
       return res.status(401).json({
         success: false,
         message: 'Authentication required',
@@ -300,7 +316,9 @@ async function authenticateToken(req, res, next) {
     }
 
     // SECURITY: Verify token with comprehensive validation
+    console.log('🔐 Verifying token...');
     const decoded = await verifyToken(token, 'access');
+    console.log('✅ Token verified successfully:', { userId: decoded.userId, email: decoded.email, role: decoded.role });
 
     // SECURITY: Attach user info to request for downstream use
     req.user = {
@@ -321,6 +339,7 @@ async function authenticateToken(req, res, next) {
     next();
   } catch (error) {
     // SECURITY: Consistent error response
+    console.log('❌ Token verification failed:', error.message);
     return res.status(401).json({
       success: false,
       message: 'Invalid or expired token',
@@ -359,5 +378,8 @@ module.exports = {
   authenticateToken,
   validateRefreshToken,
   TOKEN_CONFIG,
-  COOKIE_CONFIG
+  COOKIE_CONFIG,
+  // Aliases for backward compatibility
+  createAccessToken: generateAccessToken,
+  createRefreshToken: generateRefreshToken
 };
