@@ -31,7 +31,7 @@ module.exports = {
   ],
 
   // Coverage thresholds (60% for DevSecOps marks)
-  coverageThresholds: {
+  coverageThreshold: {
     global: {
       branches: 60,
       functions: 60,

@@ -8,6 +8,15 @@ module.exports = {
   // Test environment
   testEnvironment: 'jsdom',
 
+  // Mock import.meta for Vite compatibility
+  globals: {
+    'import.meta': {
+      env: {
+        VITE_API_URL: 'https://localhost:3003',
+      },
+    },
+  },
+
   // Coverage configuration for SonarQube
   collectCoverage: true,
   coverageDirectory: 'coverage',
@@ -31,7 +40,7 @@ module.exports = {
   ],
 
   // Coverage thresholds (60% for DevSecOps marks)
-  coverageThresholds: {
+  coverageThreshold: {
     global: {
       branches: 50,
       functions: 50,
@@ -60,6 +69,9 @@ module.exports = {
   moduleNameMapper: {
     '\\.(css|less|scss|sass)$': 'identity-obj-proxy',
     '\\.(jpg|jpeg|png|gif|svg|webp)$': '<rootDir>/__mocks__/fileMock.js',
+    '^@/config/api$': '<rootDir>/src/__mocks__/api.js',
+    '^../config/api$': '<rootDir>/src/__mocks__/api.js',
+    '^../../config/api$': '<rootDir>/src/__mocks__/api.js',
   },
 
   // Setup files
