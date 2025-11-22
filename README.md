@@ -526,13 +526,13 @@ The Employee Portal allows authorized bank employees to verify payments, submit 
 
 After running `npm run seed`, you'll have these employee accounts:
 
-| Name                   | Email               | Password   | Department   | Permissions                                                                    |
-| ---------------------- | ------------------- | ---------- | ------------ | ------------------------------------------------------------------------------ |
-| **Emma Analyst**       | analyst@bank.com    | Secure123! | Analytics    | view_payments, view_customers                                                  |
-| **Victor Verifier**    | verifier@bank.com   | Secure123! | Verification | view_payments, verify_payments, view_customers                                 |
-| **Charlie Compliance** | compliance@bank.com | Secure123! | Compliance   | view_payments, verify_payments, submit_swift, view_customers                   |
-| **Olivia Operations**  | operations@bank.com | Secure123! | Management   | view_payments, verify_payments, submit_swift, view_customers, manage_employees |
-| **Audrey Auditor**     | auditor@bank.com    | Secure123! | Audit        | view_payments, view_customers, view_audit_logs                                 |
+  | Name           | Email              | Password              |
+  |----------------|--------------------|-----------------------|
+  | John Manager   | manager@bank.com   | Manager2025!Secure#9X |
+  | Sarah Verifier | verifier1@bank.com | Verifier1@2025!Kp7    |
+  | Mike Validator | verifier2@bank.com | Validator2#2025!Qw3   |
+  | Emma Analyst   | analyst@bank.com   | Analyst2025@Secure!7M |
+  | David Admin    | admin@bank.com     | Admin2025#Strong!5R   |
 
 ### Accessing the Employee Portal
 
